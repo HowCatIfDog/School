@@ -1,5 +1,5 @@
 #include <pthread.h>
-#include <stdlib.c>
+//#include <stdio.c>
 
 /* these may be any values >= 0 */
 #define NUMBER_OF_CUSTOMERS 5
