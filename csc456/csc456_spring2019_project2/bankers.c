@@ -20,26 +20,26 @@ int main(int argc, char *argv[])
     for(int i = 0; i<NUMBER_OF_RESOURCES; i++)
     {
         // available[i] = strtol(argv[i+1]);
-        available[i] = atoi(argv[i+1]);
+        available[i] = atoi(argv[i+1]);//this one works best on my machine
         //available[i] = i+1;
     }
 
-    initialize_arrays(maximum, allocation, need);
-
-    print_table(need, allocation, maximum, available);
-
+    initialize_arrays();
+    //testing
+    // maximum[1][1] = 4;
+    // update_need();
+    print_table();
+    //testing
     // int temp = 0;
     // temp=safety_test();
     // printf("%d\n", temp);
 
-    
+
 
     return 0;
 }
 
-int initialize_arrays(int maximum[][NUMBER_OF_RESOURCES],
-    int allocation[][NUMBER_OF_RESOURCES],
-    int need[][NUMBER_OF_RESOURCES])
+int initialize_arrays()
 {
     int i = 0;
     int j = 0;
@@ -61,7 +61,7 @@ int initialize_arrays(int maximum[][NUMBER_OF_RESOURCES],
         }
     }
     //update need
-    update_need(need, maximum, allocation);
+    update_need();
 }
 
 int request_resources(int customer_num, int request[])
@@ -112,7 +112,7 @@ int request_resources(int customer_num, int request[])
         need[customer_num][j]=need[customer_num][j]-request[j];
     }
 
-
+    update_need();
     // /* release and warn if the mutex was not released  */
     // pthread_mutex_unlock(&pidMutex);
     return 0;
@@ -125,9 +125,16 @@ int release_resources(int customer_num, int release[])
     // {
     //     pthread_mutex_lock(&pidMutex);
     // }
-    //
-    //
-    //
+
+    for(int j=0; j<NUMBER_OF_RESOURCES; j++)
+    {
+        available[j]=available[j]+release[j];
+        allocation[customer_num][j]=allocation[customer_num][j]-release[j];
+        need[customer_num][j]=need[customer_num][j]+release[j];
+    }
+
+    update_need();
+
     // /* release and warn if the mutex was not released  */
     // pthread_mutex_unlock(&pidMutex);
     return 0;
@@ -186,16 +193,13 @@ int safety_test()
     return 0;
 }
 
-int update_need(int need[][NUMBER_OF_RESOURCES],
-    int allocation[][NUMBER_OF_RESOURCES],
-    int maximum[][NUMBER_OF_RESOURCES])
+int update_need()
 {
     for(int i = 0; i<NUMBER_OF_CUSTOMERS; i++)
     {
         for(int j = 0; j<NUMBER_OF_RESOURCES; j++)
         {
-            //no idea why but there needs to be a negative there
-            need[i][j] = -(maximum[i][j] - allocation[i][j]);
+            need[i][j] = (maximum[i][j] - allocation[i][j]);
             //printf("%d \n", maximum[i][j]-allocation[i][j]);
         }
     }
@@ -203,11 +207,9 @@ int update_need(int need[][NUMBER_OF_RESOURCES],
     return 0;
 }
 
-void print_table(int need[][NUMBER_OF_RESOURCES],
-    int allocation[][NUMBER_OF_RESOURCES],
-    int maximum[][NUMBER_OF_RESOURCES],
-    int available[])
+void print_table()
 {
+    //print out a poorly formated table of all the arrays
     printf("     Allocation    Need     Maximum    Available\n");
     for(int i = 0; i<NUMBER_OF_CUSTOMERS; i++)
     {
