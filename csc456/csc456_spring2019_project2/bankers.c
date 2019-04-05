@@ -28,7 +28,11 @@ int main(int argc, char *argv[])
 
     print_table(need, allocation, maximum, available);
 
+    // int temp = 0;
+    // temp=safety_test();
+    // printf("%d\n", temp);
 
+    
 
     return 0;
 }
@@ -44,7 +48,7 @@ int initialize_arrays(int maximum[][NUMBER_OF_RESOURCES],
     {
         for(j = 0; j<NUMBER_OF_RESOURCES; j++)
         {
-            maximum[i][j] = 2;
+            maximum[i][j] = available[j]/2;
         }
     }
 
@@ -67,9 +71,48 @@ int request_resources(int customer_num, int request[])
     // {
     //     pthread_mutex_lock(&pidMutex);
     // }
-    //
-    //
-    //
+
+    // 1) If Requesti <= Needi
+    // Goto step (2) ; otherwise, raise an error condition, since the process has exceeded its maximum claim.
+
+    int temp = 0;
+    for(int i=0; i<NUMBER_OF_RESOURCES; i++)
+    {
+        if(request[i]>need[customer_num][i])
+            temp = -1;
+    }
+    if(temp<0)
+    {
+        return -1;
+    }
+
+    // 2) If Requesti <= Available
+    // Goto step (3); otherwise, Pi must wait, since the resources are not available.
+
+    int temp2 = 0;
+    for(int i=0; i<NUMBER_OF_RESOURCES; i++)
+    {
+        if(request[i]>available[i])
+            temp2 = -1;
+    }
+    if(temp<0)
+    {
+        //wait
+    }
+
+    // 3) Have the system pretend to have allocated the requested resources to process Pi by modifying the state as
+    // follows:
+    // Available = Available – Requesti
+    // Allocationi = Allocationi + Requesti
+    // Needi = Needi– Requesti
+    for(int j=0; j<NUMBER_OF_RESOURCES; j++)
+    {
+        available[j]=available[j]-request[j];
+        allocation[customer_num][j]=allocation[customer_num][j]+request[j];
+        need[customer_num][j]=need[customer_num][j]-request[j];
+    }
+
+
     // /* release and warn if the mutex was not released  */
     // pthread_mutex_unlock(&pidMutex);
     return 0;
@@ -92,7 +135,55 @@ int release_resources(int customer_num, int release[])
 
 int safety_test()
 {
+    // 1) Let Work and Finish be vectors of length ‘m’ and ‘n’ respectively.
+    // Initialize: Work = Available
+    // Finish[i] = false; for i=1, 2, 3, 4….n
+    int work[NUMBER_OF_RESOURCES];
+    int finish[NUMBER_OF_CUSTOMERS]; //0=TRUE -1=FALSE
 
+    for(int i=0; i<NUMBER_OF_RESOURCES; i++)
+    {
+        work[i]=available[i];
+    }
+    for(int j=0; j<NUMBER_OF_CUSTOMERS; j++)
+    {
+        finish[j]=-1;
+    }
+
+    // 2) Find an i such that both
+    // a) Finish[i] = false
+    // b) Needi <= Work
+    // if no such i exists goto step (4)
+    for(int i=0; i<NUMBER_OF_CUSTOMERS; i++)
+    {
+        int temp = 0;
+        for(int k=0; k<NUMBER_OF_RESOURCES; k++)
+        {
+            if(need[i][k]>work[k])
+                temp = -1;
+        }
+
+        // 3) Work = Work + Allocation[i]
+        // Finish[i] = true
+        // goto step (2)
+        if(finish[i]==-1 && temp==0)
+        {
+            for(int j=0; j<NUMBER_OF_RESOURCES; j++)
+                work[j]=work[j]+allocation[i][j];
+
+            finish[i] = 0;
+        }
+    }
+
+    // 4) if Finish [i] = true for all i
+    // then the system is in a safe state
+    //if every element in finish is true then return true else return false
+    for(int k=0; k<NUMBER_OF_CUSTOMERS; k++)
+    {
+        if(finish[k]!=0)
+            return -1;
+    }
+    return 0;
 }
 
 int update_need(int need[][NUMBER_OF_RESOURCES],
@@ -117,7 +208,7 @@ void print_table(int need[][NUMBER_OF_RESOURCES],
     int maximum[][NUMBER_OF_RESOURCES],
     int available[])
 {
-    printf("     Allocation    Need     Maximum     Available\n");
+    printf("     Allocation    Need     Maximum    Available\n");
     for(int i = 0; i<NUMBER_OF_CUSTOMERS; i++)
     {
         printf("P%d     ", i);
