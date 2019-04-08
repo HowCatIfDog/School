@@ -5,3 +5,4 @@ int safety_test();
 int update_need();
 void print_table();
 int initialize_arrays();
+void *tFunction(void *param);

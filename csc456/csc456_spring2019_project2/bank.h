@@ -2,7 +2,7 @@
 //#include <stdio.c>
 
 /* these may be any values >= 0 */
-#define NUMBER_OF_CUSTOMERS 7
+#define NUMBER_OF_CUSTOMERS 5
 #define NUMBER_OF_RESOURCES 3
 /* the available amount of each resource */
 int available[NUMBER_OF_RESOURCES];

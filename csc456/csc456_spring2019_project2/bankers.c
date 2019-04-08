@@ -5,9 +5,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-pthread_mutex_t pidMutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t mutex;
-pthread_mutex_t test_mutex;
+// pthread_mutex_t pidMutex = PTHREAD_MUTEX_INITIALIZER;
+// pthread_mutex_t mutex;
+// pthread_mutex_t test_mutex;
+pthread_t tids[NUMBER_OF_CUSTOMERS];
+int counter = 0;
 
 int main(int argc, char *argv[])
 {
@@ -16,6 +18,8 @@ int main(int argc, char *argv[])
 	     printf("Incorrect number of arguments\n");
          return -1;
     }
+
+    pthread_t tids[NUMBER_OF_CUSTOMERS];
 
     for(int i = 0; i<NUMBER_OF_RESOURCES; i++)
     {
@@ -34,6 +38,39 @@ int main(int argc, char *argv[])
     // temp=safety_test();
     // printf("%d\n", temp);
 
+    for(counter = 0; counter<NUMBER_OF_CUSTOMERS; counter++)
+    {
+        if(pthread_create(&tids[counter], NULL, tFunction, (void *)(intptr_t)counter))
+        {
+            printf( "Error creating thread\n");
+            return -2;
+        }
+    }
+
+
+    for(int i = 0; i<NUMBER_OF_CUSTOMERS; i++)
+    {
+        if(pthread_join(tids[i], NULL))
+        {
+            printf( "Error joining thread\n");
+            return -3;
+        }
+    }
+
+
+    return 0;
+}
+
+void *tFunction(void *param)
+{
+    int arg = (intptr_t) param;
+    printf("in tFunction %d\n", arg);
+    // int customer_num = 0;
+    // int request[NUMBER_OF_RESOURCES];
+    // for(int i=0; i<NUMBER_OF_RESOURCES; i++)
+    // {
+    //     request[i]=(int)(random() % maximum[customer_num][i]);
+    // }
 
 
     return 0;
