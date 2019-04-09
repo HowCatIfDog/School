@@ -8,6 +8,7 @@
 // pthread_mutex_t pidMutex = PTHREAD_MUTEX_INITIALIZER;
 // pthread_mutex_t mutex;
 // pthread_mutex_t test_mutex;
+pthread_mutex_t lock;
 pthread_t tids[NUMBER_OF_CUSTOMERS];
 int counter = 0;
 
@@ -63,16 +64,47 @@ int main(int argc, char *argv[])
 
 void *tFunction(void *param)
 {
-    int arg = (intptr_t) param;
-    printf("in tFunction %d\n", arg);
-    // int customer_num = 0;
-    // int request[NUMBER_OF_RESOURCES];
-    // for(int i=0; i<NUMBER_OF_RESOURCES; i++)
-    // {
-    //     request[i]=(int)(random() % maximum[customer_num][i]);
-    // }
+    while(1){
+        int arg = (intptr_t) param;
+        //printf("in tFunction %d\n", arg);
+        int request[NUMBER_OF_RESOURCES];
+        for(int i=0; i<NUMBER_OF_RESOURCES; i++)
+        {
+            request[i]=(int)(random() % need[arg][i]);
+        }
 
+        if(pthread_mutex_trylock(&lock) != 0)
+        {
+            pthread_mutex_lock(&lock);
+        }
+        printf("requesting resources <" );
+        for(int j=0; j<NUMBER_OF_RESOURCES; j++)
+        {
+            printf("%d,", request[j]);
+        }
+        printf(">\n");
+        pthread_mutex_unlock(&lock);
 
+        if(request_resources(arg, request) == 0)
+        {
+            if(pthread_mutex_trylock(&lock) != 0)
+            {
+                pthread_mutex_lock(&lock);
+            }
+            print_table();
+            pthread_mutex_unlock(&lock);
+        }
+
+        release_resources(arg, request);
+
+        if(pthread_mutex_trylock(&lock) != 0)
+        {
+            pthread_mutex_lock(&lock);
+        }
+        print_table();
+        pthread_mutex_unlock(&lock);
+
+    }
     return 0;
 }
 
@@ -104,10 +136,10 @@ int initialize_arrays()
 int request_resources(int customer_num, int request[])
 {
     /* acquire the mutex lock and warn if unable */
-    // if(pthread_mutex_trylock(&pidMutex) != 0)
-    // {
-    //     pthread_mutex_lock(&pidMutex);
-    // }
+    if(pthread_mutex_trylock(&lock) != 0)
+    {
+        pthread_mutex_lock(&lock);
+    }
 
     // 1) If Requesti <= Needi
     // Goto step (2) ; otherwise, raise an error condition, since the process has exceeded its maximum claim.
@@ -132,7 +164,7 @@ int request_resources(int customer_num, int request[])
         if(request[i]>available[i])
             temp2 = -1;
     }
-    if(temp<0)
+    if(temp2<0)
     {
         //wait
     }
@@ -148,20 +180,21 @@ int request_resources(int customer_num, int request[])
         allocation[customer_num][j]=allocation[customer_num][j]+request[j];
         need[customer_num][j]=need[customer_num][j]-request[j];
     }
+    printf("safe, request granted\n" );
 
     update_need();
-    // /* release and warn if the mutex was not released  */
-    // pthread_mutex_unlock(&pidMutex);
+    /* release and warn if the mutex was not released  */
+    pthread_mutex_unlock(&lock);
     return 0;
 }
 
 int release_resources(int customer_num, int release[])
 {
     /* acquire the mutex lock and warn if unable */
-    // if(pthread_mutex_trylock(&pidMutex) != 0)
-    // {
-    //     pthread_mutex_lock(&pidMutex);
-    // }
+    if(pthread_mutex_trylock(&lock) != 0)
+    {
+        pthread_mutex_lock(&lock);
+    }
 
     for(int j=0; j<NUMBER_OF_RESOURCES; j++)
     {
@@ -171,9 +204,9 @@ int release_resources(int customer_num, int release[])
     }
 
     update_need();
-
-    // /* release and warn if the mutex was not released  */
-    // pthread_mutex_unlock(&pidMutex);
+    printf("resources released\n" );
+    /* release and warn if the mutex was not released  */
+    pthread_mutex_unlock(&lock);
     return 0;
 }
 
