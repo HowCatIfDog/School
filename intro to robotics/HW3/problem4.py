@@ -8,46 +8,45 @@ def problem4():
 
     t = np.arange(0, 20.05, 0.05)
 
+    # Initial Conditions about robot
     L1 = 0.30
     L2 = 0.20
     r = 0.08
 
+    # Wheel velocities
     FLW = 0.75*np.cos(t/3.0)
     FRW = 1.50*np.cos(t/3.0)
     BLW = -1.0
     BRW = 0.5
 
-    theta = np.zeros(201)
-    x = np.zeros(201)
-    y = np.zeros(201)
+    # initialize x,y, and theta
+    theta = [0]
+    x = [0]
+    y = [0]
 
+
+    # space saving code
     short = (r*0.05)/4
-
     A = FLW+FRW+BLW+BRW
     B = -FLW+FRW+BLW-BRW
     C = -FLW+FRW-BLW+BRW
 
-    for i in range(0, 200):
-        thetaNext = theta[i] + short*(1/(L1+L2)*C)
-        xNext = x[i] + short * (A * np.cos(theta[i]) + B * np.sin(theta[i]))
-        yNext = y[i] + short * (A * np.sin(theta[i]) + B * np.cos(theta[i]))
-        x[i+1] = xNext
-        y[i+1] = yNext
-        theta[i+1] = thetaNext
+    for i in range(1, 201):
+        theta.append(theta[i-1] + short*(1/(L1+L2)*C[i]))
+        x.append(x[i-1] + short * (A[i] * np.cos(theta[i-1]) + B[i] * np.sin(theta[i-1])))
+        y.append(y[i-1] + short * (A[i] * np.sin(theta[i-1]) + B[i] * np.cos(theta[i-1])))
+
+
+    u = np.cos(theta)
+    v = np.sin(theta)
+
+    plt.quiver(x,y,u,v)
+    plt.title("Chapter 5: Problem 4")
 
     plt.plot(x,y)
     plt.show()
 
-    # thetaDot = (r/4) * C * (1/(L1+L2))
-    # theta = integrate.simps(thetaDot)
-    #
-    # xvel = (r/4) * (A*np.cos(theta) + B*np.sin(theta))
-    # yvel = (r/4) * (A*np.sin(theta) + B*np.cos(theta))
-    #
-    # x = np.trapz(xvel)
-    # y = integrate.simps(yvel)
 
-    print(x)
-    print(y)
+
 
 problem4()
