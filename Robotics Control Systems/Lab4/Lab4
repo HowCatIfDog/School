@@ -1,0 +1,17 @@
+
+% Spacing between vector points
+Ts = 0.5
+
+xrange = 500
+yrange = 500
+
+vectarry = []
+
+figure
+for x = -xrange:xrange
+    for y = -yrange:yrange
+        xcomp = vectarry[x,y]
+        ycomp = vectarry[x,y]
+        quiver(x,y,xcomp,ycomp)
+    end
+end
